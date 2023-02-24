@@ -1,0 +1,77 @@
+#include <Keypad.h>
+#include <LiquidCrystal.h>
+
+const byte ROWS = 4;
+const byte COLS = 4;
+
+char keys[ROWS][COLS] = {
+  {'1', '2', '3', 'A'},
+  {'4', '5', '6', 'B'},
+  {'7', '8', '9', 'C'},
+  {'*', '0', '#', 'D'}
+};
+
+byte rowPins[ROWS] = {9, 8, 7, 6};
+byte colPins[COLS] = {5, 4, 3, 2};
+
+Keypad keypad = Keypad(makeKeymap(keys), rowPins, colPins, ROWS, COLS);
+
+LiquidCrystal lcd(12, 11, 10, 16, 17, 18, 19);
+
+int weight = 0;
+int height = 0;
+float bmi = 0.0;
+
+void setup() {
+  lcd.begin(16, 2);
+  lcd.print("Enter weight:");
+}
+
+void loop() {
+  char key = keypad.getKey();
+  
+  if (key != NO_KEY) {
+    if (key >= '0' && key <= '9') {
+      if (weight == 0) {
+        weight = key - '0';
+        lcd.setCursor(0, 1);
+        lcd.print(weight);
+      } else if (height == 0) {
+        height = key - '0';
+        lcd.print(height);
+      } else {
+        height = height * 10 + (key - '0');
+        lcd.print(key);
+      }
+    } else if (key == '#') {
+      if (weight == 0 || height == 0) {
+        lcd.clear();
+        lcd.print("Error: Enter both");
+        lcd.setCursor(0, 1);
+        lcd.print("weight and height");
+      } else {
+        bmi = weight / ((height / 100.0) * (height / 100.0));
+        lcd.clear();
+        lcd.print("BMI = ");
+        lcd.print(bmi, 2);
+        lcd.setCursor(0, 1);
+        if (bmi < 18.5) {
+          lcd.print("Underweight");
+        } else if (bmi >= 18.5 && bmi < 25.0) {
+          lcd.print("Normal weight");
+        } else if (bmi >= 25.0 && bmi < 30.0) {
+          lcd.print("Overweight");
+        } else {
+          lcd.print("Obese");
+        }
+      }
+    } else if (key == '*') {
+      weight = 0;
+      height = 0;
+      bmi = 0.0;
+      lcd.clear();
+      lcd.print("Enter weight:");
+      lcd.setCursor(0, 1);
+    }
+  }
+}
